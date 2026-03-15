@@ -1,0 +1,32 @@
+name: Noctua Pre-flight
+
+on: [push]
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Extract diff
+        run: git diff HEAD~1 --unified=0 > /tmp/diff.patch
+
+      - name: Run Noctua pre-flight check
+        env:
+          NOCTUA_ENGINE_URL: ${{ vars.NOCTUA_ENGINE_URL }}
+        run: |
+          DIFF_B64=$(base64 -w 0 /tmp/diff.patch)
+          RESULT=$(curl -sf -X POST \
+            "${NOCTUA_ENGINE_URL}/preflight" \
+            -H "Content-Type: application/json" \
+            -d "{\"diff_b64\": \"$DIFF_B64\", \"author\": \"$GITHUB_ACTOR\"}")
+
+          echo "--- Noctua Pre-flight Result ---"
+          echo "$RESULT" | python3 -m json.tool
+
+          # Fail the action if pre-flight did not pass
+          echo "$RESULT" | python3 -c \
+            "import sys,json; d=json.load(sys.stdin); \
+             sys.exit(0 if d['passed'] else 1)"

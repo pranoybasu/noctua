@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+httpx
+groq
+supabase
+python-dotenv
+pydantic-settings
+resend
+pytest
+pytest-asyncio

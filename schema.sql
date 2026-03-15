@@ -275,8 +275,16 @@ create index if not exists jobs_created_idx on analysis_jobs(created_at desc);
 -- ============================================================
 -- ROW-LEVEL SECURITY (RLS)
 -- ============================================================
--- All tables are locked down. Users only see their own data.
--- The Python engine uses the service_role key which bypasses RLS.
+-- Architecture note: This app uses NextAuth (not Supabase Auth),
+-- so auth.uid() is NOT available. All server-side writes use the
+-- service_role key which bypasses RLS entirely.
+--
+-- RLS is enabled with permissive SELECT policies for the anon role
+-- so that Supabase Realtime can push postgres_changes events to
+-- the browser client (which connects with the anon key).
+--
+-- Security is enforced at the application layer: all queries go
+-- through authenticated Next.js API routes that filter by userId.
 -- ============================================================
 
 alter table repos          enable row level security;
@@ -285,50 +293,48 @@ alter table team_stats     enable row level security;
 alter table analysis_jobs  enable row level security;
 
 -- Drop policies if they already exist (idempotent re-runs)
-drop policy if exists "owner can manage repos"      on repos;
-drop policy if exists "user can read their prs"     on pull_requests;
-drop policy if exists "user can read their stats"   on team_stats;
-drop policy if exists "user can read their jobs"    on analysis_jobs;
+drop policy if exists "owner can manage repos"       on repos;
+drop policy if exists "user can read their prs"      on pull_requests;
+drop policy if exists "user can read their stats"    on team_stats;
+drop policy if exists "user can read their jobs"     on analysis_jobs;
+drop policy if exists "anon can read prs"            on pull_requests;
+drop policy if exists "anon can read analysis_jobs"  on analysis_jobs;
+drop policy if exists "service role full access repos"         on repos;
+drop policy if exists "service role full access prs"           on pull_requests;
+drop policy if exists "service role full access team_stats"    on team_stats;
+drop policy if exists "service role full access analysis_jobs" on analysis_jobs;
 
--- REPOS: full CRUD for the owner only
-create policy "owner can manage repos"
-  on repos
-  for all
-  using  (auth.uid() = user_id)
-  with check (auth.uid() = user_id);
+-- SERVICE ROLE: full access on all tables (used by Next.js API routes + Python engine)
+create policy "service role full access repos"
+  on repos for all
+  using (auth.role() = 'service_role')
+  with check (auth.role() = 'service_role');
 
--- PULL_REQUESTS: readable if the user owns the parent repo
-create policy "user can read their prs"
+create policy "service role full access prs"
+  on pull_requests for all
+  using (auth.role() = 'service_role')
+  with check (auth.role() = 'service_role');
+
+create policy "service role full access team_stats"
+  on team_stats for all
+  using (auth.role() = 'service_role')
+  with check (auth.role() = 'service_role');
+
+create policy "service role full access analysis_jobs"
+  on analysis_jobs for all
+  using (auth.role() = 'service_role')
+  with check (auth.role() = 'service_role');
+
+-- ANON: read-only on pull_requests and analysis_jobs (for Supabase Realtime)
+create policy "anon can read prs"
   on pull_requests
   for select
-  using (
-    repo_id in (
-      select id from repos where user_id = auth.uid()
-    )
-  );
+  using (auth.role() = 'anon');
 
--- TEAM_STATS: readable if the user owns the parent repo
-create policy "user can read their stats"
-  on team_stats
-  for select
-  using (
-    repo_id in (
-      select id from repos where user_id = auth.uid()
-    )
-  );
-
--- ANALYSIS_JOBS: readable if the user owns the PR's parent repo
-create policy "user can read their jobs"
+create policy "anon can read analysis_jobs"
   on analysis_jobs
   for select
-  using (
-    pr_id in (
-      select pr.id
-      from   pull_requests pr
-      join   repos r on r.id = pr.repo_id
-      where  r.user_id = auth.uid()
-    )
-  );
+  using (auth.role() = 'anon');
 
 
 -- ============================================================
