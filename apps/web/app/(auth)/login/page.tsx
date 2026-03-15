@@ -2,11 +2,14 @@
 
 import { signIn } from "next-auth/react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleGitHub = async () => {
     setLoading(true);
@@ -15,7 +18,17 @@ export default function LoginPage() {
 
   const handleDemo = async () => {
     setLoading(true);
-    await signIn("credentials", { callbackUrl: "/dashboard" });
+    setError(null);
+    const result = await signIn("credentials", {
+      redirect: false,
+      callbackUrl: "/dashboard",
+    });
+    if (result?.error) {
+      setError(result.error);
+      setLoading(false);
+    } else if (result?.url) {
+      router.push("/dashboard");
+    }
   };
 
   return (
@@ -74,6 +87,12 @@ export default function LoginPage() {
             Enter Demo Mode
           </button>
         </div>
+
+        {error && (
+          <p className="text-xs text-center text-red-500">
+            Sign-in error: {error}
+          </p>
+        )}
 
         <p className="text-xs text-center text-muted-foreground">
           Noctua requests read access to your repos and PRs. No code is stored.
