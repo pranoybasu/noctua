@@ -1,0 +1,821 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.root{padding:1rem 0}
+
+.timeline{display:flex;gap:0;margin-bottom:1.75rem;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden}
+.titem{flex:1;padding:10px 8px;text-align:center;cursor:pointer;border-right:0.5px solid var(--color-border-tertiary);transition:background .15s;position:relative}
+.titem:last-child{border-right:none}
+.titem:hover{background:var(--color-background-secondary)}
+.titem.active{background:#EEEDFE}
+@media(prefers-color-scheme:dark){.titem.active{background:#26215C}}
+.titem-num{font-size:11px;color:var(--color-text-tertiary);margin-bottom:2px}
+.titem-label{font-size:12px;font-weight:500;color:var(--color-text-secondary);line-height:1.3}
+.titem.active .titem-label{color:#3C3489}
+@media(prefers-color-scheme:dark){.titem.active .titem-label{color:#CECBF6}}
+.titem-days{font-size:10px;color:var(--color-text-tertiary);margin-top:2px}
+
+.panel{display:none}
+.panel.active{display:block}
+
+.panel-hero{display:flex;align-items:flex-start;gap:14px;margin-bottom:1.25rem;padding:1.25rem;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg)}
+.panel-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.panel-title{font-size:16px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+.panel-desc{font-size:13px;color:var(--color-text-secondary);line-height:1.55}
+.eta-tag{display:inline-block;margin-top:6px;font-size:11px;font-weight:500;padding:2px 9px;border-radius:20px;background:#EAF3DE;color:#27500A}
+@media(prefers-color-scheme:dark){.eta-tag{background:#173404;color:#C0DD97}}
+
+.steps{display:flex;flex-direction:column;gap:8px}
+.step{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);background:var(--color-background-primary);overflow:hidden}
+.step-hd{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;user-select:none;transition:background .12s}
+.step-hd:hover{background:var(--color-background-secondary)}
+.snum{width:22px;height:22px;border-radius:50%;background:#EEEDFE;color:#3C3489;font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+@media(prefers-color-scheme:dark){.snum{background:#26215C;color:#CECBF6}}
+.sname{font-size:13px;font-weight:500;color:var(--color-text-primary);flex:1}
+.stags{display:flex;gap:5px;flex-shrink:0}
+.stag{font-size:10px;font-weight:500;padding:2px 7px;border-radius:20px}
+.tag-n{background:#E6F1FB;color:#0C447C}
+.tag-p{background:#EAF3DE;color:#27500A}
+.tag-b{background:#FAEEDA;color:#633806}
+.tag-i{background:#FAECE7;color:#711B0C}
+.tag-u{background:#FBEAF0;color:#72243E}
+@media(prefers-color-scheme:dark){
+  .tag-n{background:#042C53;color:#B5D4F4}
+  .tag-p{background:#173404;color:#C0DD97}
+  .tag-b{background:#412402;color:#FAC775}
+  .tag-i{background:#4A1B0C;color:#F5C4B3}
+  .tag-u{background:#4B1528;color:#F4C0D1}
+}
+.schev{font-size:11px;color:var(--color-text-tertiary);transition:transform .18s;flex-shrink:0}
+.schev.open{transform:rotate(90deg)}
+.step-bd{display:none;padding:0 14px 14px;border-top:0.5px solid var(--color-border-tertiary)}
+.step-bd.open{display:block}
+.step-bd-text{font-size:13px;color:var(--color-text-secondary);line-height:1.6;margin:10px 0 8px}
+.code{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px;font-family:var(--font-mono);font-size:11.5px;color:var(--color-text-primary);line-height:1.75;margin-top:8px;white-space:pre;overflow-x:auto}
+.flabel{font-size:10px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:.05em;margin-top:12px;margin-bottom:3px}
+.bullets{margin-top:8px;display:flex;flex-direction:column;gap:5px}
+.bullet{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--color-text-secondary);line-height:1.5}
+.bdot{width:5px;height:5px;border-radius:50%;background:#7F77DD;margin-top:7px;flex-shrink:0}
+
+.unique-banner{background:#EEEDFE;border-radius:var(--border-radius-md);padding:10px 14px;margin-top:10px;font-size:12px;color:#3C3489;font-weight:500;display:flex;align-items:flex-start;gap:8px;line-height:1.5}
+@media(prefers-color-scheme:dark){.unique-banner{background:#26215C;color:#CECBF6}}
+.ubadge{font-size:10px;background:#534AB7;color:#EEEDFE;padding:2px 7px;border-radius:20px;flex-shrink:0;margin-top:1px}
+@media(prefers-color-scheme:dark){.ubadge{background:#AFA9EC;color:#26215C}}
+
+.arch-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.arch-cell{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:9px 10px;text-align:center}
+.arch-top{font-size:10px;color:var(--color-text-tertiary);margin-bottom:3px}
+.arch-bot{font-size:12px;font-weight:500;color:var(--color-text-primary);line-height:1.35}
+
+.progress-strip{display:flex;align-items:center;gap:10px;margin-top:1.25rem;padding:10px 14px;background:var(--color-background-secondary);border-radius:var(--border-radius-md)}
+.pbar-bg{flex:1;height:5px;background:var(--color-border-tertiary);border-radius:3px}
+.pbar-fill{height:5px;border-radius:3px;background:#7F77DD;transition:width .4s}
+.pbar-label{font-size:11px;color:var(--color-text-tertiary);white-space:nowrap}
+.pbar-val{font-size:11px;font-weight:500;color:#534AB7;white-space:nowrap}
+@media(prefers-color-scheme:dark){.pbar-val{color:#AFA9EC}}
+
+.cta-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:1.25rem}
+.cbtn{background:transparent;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:7px 13px;font-size:12px;font-weight:500;color:var(--color-text-primary);cursor:pointer;transition:background .12s}
+.cbtn:hover{background:var(--color-background-secondary)}
+</style>
+
+<div class="root">
+
+<div class="timeline">
+  <div class="titem active" onclick="go(0)"><div class="titem-num">Phase 0</div><div class="titem-label">Scaffold</div><div class="titem-days">Day 1–2</div></div>
+  <div class="titem" onclick="go(1)"><div class="titem-num">Phase 1</div><div class="titem-label">Auth + Repos</div><div class="titem-days">Day 3–5</div></div>
+  <div class="titem" onclick="go(2)"><div class="titem-num">Phase 2</div><div class="titem-label">Webhooks</div><div class="titem-days">Day 6–8</div></div>
+  <div class="titem" onclick="go(3)"><div class="titem-num">Phase 3</div><div class="titem-label">AI Engine</div><div class="titem-days">Day 9–15</div></div>
+  <div class="titem" onclick="go(4)"><div class="titem-num">Phase 4</div><div class="titem-label">Dashboard</div><div class="titem-days">Day 16–19</div></div>
+  <div class="titem" onclick="go(5)"><div class="titem-num">Phase 5</div><div class="titem-label">Ship It</div><div class="titem-days">Day 20–21</div></div>
+</div>
+
+<!-- PHASE 0 -->
+<div class="panel active" id="ph0">
+  <div class="panel-hero">
+    <div class="panel-icon" style="background:#EEEDFE">📁</div>
+    <div>
+      <div class="panel-title">Phase 0 — Monorepo scaffold & free services</div>
+      <div class="panel-desc">One repo, two apps. Next.js handles the web and webhook layer. Python FastAPI is the AI brain. They talk via internal HTTP. Zero config drift.</div>
+      <span class="eta-tag">Day 1–2 · ~4 hrs</span>
+    </div>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-hd" onclick="tog(this)">
+        <div class="snum">1</div><div class="sname">Monorepo structure</div>
+        <div class="stags"><span class="stag tag-b">Both</span></div><span class="schev">▶</span>
+      </div>
+      <div class="step-bd">
+        <div class="code">noctua/
+├── apps/
+│   ├── web/          ← Next.js 14 (App Router + TypeScript)
+│   └── engine/       ← Python 3.11 FastAPI
+├── packages/
+│   └── types/        ← shared TypeScript types (PRPayload, AnalysisResult)
+├── .env.local
+└── vercel.json</div>
+        <div class="bullets">
+          <div class="bullet"><span class="bdot"></span>Run <code style="font-size:11px">npx create-next-app@latest apps/web --typescript --tailwind --app</code></div>
+          <div class="bullet"><span class="bdot"></span>Run <code style="font-size:11px">cd apps/engine && python -m venv .venv && source .venv/bin/activate</code></div>
+          <div class="bullet"><span class="bdot"></span>Add <code style="font-size:11px">runtime.txt</code> → <code style="font-size:11px">python-3.11</code> for Vercel Python runtime</div>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-hd" onclick="tog(this)">
+        <div class="snum">2</div><div class="sname">Register all free services (takes ~30 min)</div>
+        <div class="stags"><span class="stag tag-i">Infra</span></div><span class="schev">▶</span>
+      </div>
+      <div class="step-bd">
+        <div class="arch-grid">
+          <div class="arch-cell"><div class="arch-top">GitHub App</div><div class="arch-bot">OAuth + PR webhooks</div></div>
+          <div class="arch-cell"><div class="arch-top">Supabase (free)</div><div class="arch-bot">Postgres + Auth + Realtime</div></div>
+          <div class="arch-cell"><div class="arch-top">Groq (free)</div><div class="arch-bot">LLaMA-3 70B inference</div></div>
+          <div class="arch-cell"><div class="arch-top">Upstash Redis (free)</div><div class="arch-bot">Job queue pub/sub</div></div>
+          <div class="arch-cell"><div class="arch-top">Resend (free)</div><div class="arch-bot">3K alert emails/month</div></div>
+          <div class="arch-cell"><div class="arch-top">Vercel (free)</div><div class="arch-bot">Next.js + Python serverless</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-hd" onclick="tog(this)">
+        <div class="snum">3</div><div class="sname">Environment variables</div>
+        <div class="stags"><span class="stag tag-b">Both</span></div><span class="schev">▶</span>
+      </div>
+      <div class="step-bd">
+        <div class="flabel">apps/web/.env.local</div>
+        <div class="code">GITHUB_APP_ID=
+GITHUB_PRIVATE_KEY=
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+GITHUB_WEBHOOK_SECRET=
+NEXTAUTH_SECRET=
+NEXTAUTH_URL=http://localhost:3000
+SUPABASE_URL=
+SUPABASE_ANON_KEY=
+UPSTASH_REDIS_URL=
+ENGINE_URL=http://localhost:8000</div>
+        <div class="flabel">apps/engine/.env</div>
+        <div class="code">GROQ_API_KEY=
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+RESEND_API_KEY=</div>
+      </div>
+    </div>
+  </div>
+  <div class="progress-strip">
+    <span class="pbar-label">Phase 0</span>
+    <div class="pbar-bg"><div class="pbar-fill" style="width:100%"></div></div>
+    <span class="pbar-val">3 steps · ~4 hrs</span>
+  </div>
+</div>
+
+<!-- PHASE 1 -->
+<div class="panel" id="ph1">
+  <div class="panel-hero">
+    <div class="panel-icon" style="background:#E6F1FB">🔑</div>
+    <div>
+      <div class="panel-title">Phase 1 — GitHub OAuth + repo connector</div>
+      <div class="panel-desc">Users sign in with GitHub, pick repos to monitor, and Noctua installs a webhook on each one. Clean protected routes from day one.</div>
+      <span class="eta-tag">Day 3–5 · ~6 hrs</span>
+    </div>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-hd" onclick="tog(this)">
+        <div class="snum">1</div><div class="sname">NextAuth + Supabase adapter</div>
+        <div class="stags"><span class="stag tag-n">Node.js</span></div><span class="schev">▶</span>
+      </div>
+      <div class="step-bd">
+        <div class="code">npm i next-auth @supabase/supabase-js @auth/supabase-adapter @octokit/rest</div>
+        <div class="flabel">apps/web/app/api/auth/[...nextauth]/route.ts</div>
+        <div class="code">import NextAuth from "next-auth"
+import GitHub from "next-auth/providers/github"
+import { SupabaseAdapter } from "@auth/supabase-adapter"
+
+export const { handlers, auth } = NextAuth({
+  adapter: SupabaseAdapter({
+    url: process.env.SUPABASE_URL!,
+    secret: process.env.SUPABASE_SERVICE_ROLE_KEY!
+  }),
+  providers: [GitHub({
+    clientId: process.env.GITHUB_CLIENT_ID!,
+    clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+    authorization: { params: { scope: "read:user repo" } }
+  })],
+  callbacks: {
+    session: ({ session, user }) => ({ ...session, userId: user.id })
+  }
+})
+export const { GET, POST } = handlers</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-hd" onclick="tog(this)">
+        <div class="snum">2</div><div class="sname">Supabase schema — 4 tables</div>
+        <div class="stags"><span class="stag tag-i">Infra</span></div><span class="schev">▶</span>
+      </div>
+      <div class="step-bd">
+        <div class="code">-- users (via NextAuth adapter, auto-created)
+-- then run these:
+
+create table repos (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references users(id) on delete cascade,
+  full_name text not null,
+  github_repo_id bigint unique,
+  webhook_id bigint,
+  review_persona text default 'balanced', -- strict|mentor|fast|balanced
+  created_at timestamptz default now()
+);
+
+create table pull_requests (
+  id uuid primary key default gen_random_uuid(),
+  repo_id uuid references repos(id),
+  pr_number int,
+  title text, author text, author_avatar text,
+  status text default 'pending',       -- pending|analyzing|done|failed
+  quality_score int,
+  security_issues jsonb default '[]',
+  ai_summary text,
+  suggestions jsonb default '[]',
+  preflight_passed bool,               -- Noctua-unique: pre-flight check
+  code_dna jsonb default '{}',         -- Noctua-unique: author pattern map
+  analyzed_at timestamptz
+);
+
+create table team_stats (              -- Noctua-unique: leaderboard
+  id uuid primary key default gen_random_uuid(),
+  repo_id uuid references repos(id),
+  author text,
+  pr_count int default 0,
+  avg_quality_score numeric default 0,
+  total_security_issues int default 0,
+  updated_at timestamptz default now()
+);</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-hd" onclick="tog(this)">
+        <div class="snum">3</div><div class="sname">Repo connector UI + webhook installer</div>
+        <div class="stags"><span class="stag tag-n">Node.js</span></div><span class="schev">▶</span>
+      </div>
+      <div class="step-bd">
+        <div class="step-bd-text">A page that lists the user's repos via GitHub API and lets them click "Watch this repo" — Noctua auto-installs the webhook via Octokit.</div>
+        <div class="code">// apps/web/app/api/repos/connect/route.ts
+import { Octokit } from "@octokit/rest"
+
+export async function POST(req: Request) {
+  const { owner, repo } = await req.json()
+  const session = await auth()
+  const octokit = new Octokit({ auth: session.accessToken })
+
+  const wh = await octokit.repos.createWebhook({
+    owner, repo,
+    config: {
+      url: `${process.env.NEXTAUTH_URL}/api/webhook/github`,
+      content_type: "json",
+      secret: process.env.GITHUB_WEBHOOK_SECRET
+    },
+    events: ["pull_request"]
+  })
+  // store in supabase repos table...
+  return Response.json({ webhookId: wh.data.id })
+}</div>
+      </div>
+    </div>
+  </div>
+  <div class="progress-strip">
+    <span class="pbar-label">Phase 1</span>
+    <div class="pbar-bg"><div class="pbar-fill" style="width:100%"></div></div>
+    <span class="pbar-val">3 steps · ~6 hrs</span>
+  </div>
+</div>
+
+<!-- PHASE 2 -->
+<div class="panel" id="ph2">
+  <div class="panel-hero">
+    <div class="panel-icon" style="background:#FAEEDA">⚡</div>
+    <div>
+      <div class="panel-title">Phase 2 — Webhook receiver + job queue</div>
+      <div class="panel-desc">Node catches every PR event, verifies HMAC, pushes a job into Upstash Redis. Python workers pull from the queue — fully decoupled and async.</div>
+      <span class="eta-tag">Day 6–8 · ~5 hrs</span>
+    </div>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-hd" onclick="tog(this)">
+        <div class="snum">1</div><div class="sname">Webhook route with signature verification</div>
+        <div class="stags"><span class="stag tag-n">Node.js</span></div><span class="schev">▶</span>
+      </div>
+      <div class="step-bd">
+        <div class="code">// apps/web/app/api/webhook/github/route.ts
+import { createHmac, timingSafeEqual } from "crypto"
+
+function verifySig(raw: string, sig: string) {
+  const expected = "sha256=" + createHmac("sha256",
+    process.env.GITHUB_WEBHOOK_SECRET!).update(raw).digest("hex")
+  return timingSafeEqual(Buffer.from(sig), Buffer.from(expected))
+}
+
+export async function POST(req: Request) {
+  const raw = await req.text()
+  const sig = req.headers.get("x-hub-signature-256") ?? ""
+  if (!verifySig(raw, sig))
+    return Response.json({ error: "Forbidden" }, { status: 403 })
+
+  const ev = req.headers.get("x-github-event")
+  const body = JSON.parse(raw)
+
+  if (ev === "pull_request" &&
+      ["opened","synchronize","reopened"].includes(body.action)) {
+    // Push job into Upstash Redis queue
+    await fetch(`${process.env.UPSTASH_REDIS_URL}/lpush/noctua:jobs`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${process.env.UPSTASH_TOKEN}` },
+      body: JSON.stringify({
+        pr_number: body.pull_request.number,
+        repo: body.repository.full_name,
+        diff_url: body.pull_request.diff_url,
+        title: body.pull_request.title,
+        author: body.pull_request.user.login,
+        persona: body.installation?.id  // resolved to persona from DB
+      })
+    })
+  }
+  return Response.json({ ok: true })
+}</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-hd" onclick="tog(this)">
+        <div class="snum">2</div><div class="sname">Local dev: smee.io tunnel for webhooks</div>
+        <div class="stags"><span class="stag tag-i">Infra</span></div><span class="schev">▶</span>
+      </div>
+      <div class="step-bd">
+        <div class="step-bd-text">GitHub can't reach localhost. Use smee.io as a free proxy during development — takes 2 minutes to set up.</div>
+        <div class="code">npx smee -u https://smee.io/your-channel-id \
+  --path /api/webhook/github \
+  --port 3000</div>
+        <div class="bullets">
+          <div class="bullet"><span class="bdot"></span>Go to smee.io → click "Start a new channel" → copy the URL</div>
+          <div class="bullet"><span class="bdot"></span>Paste it as the webhook URL in your GitHub App settings during dev</div>
+          <div class="bullet"><span class="bdot"></span>Switch to your real Vercel URL after deploying</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="progress-strip">
+    <span class="pbar-label">Phase 2</span>
+    <div class="pbar-bg"><div class="pbar-fill" style="width:100%"></div></div>
+    <span class="pbar-val">2 steps · ~5 hrs</span>
+  </div>
+</div>
+
+<!-- PHASE 3 -->
+<div class="panel" id="ph3">
+  <div class="panel-hero">
+    <div class="panel-icon" style="background:#EAF3DE">🐍</div>
+    <div>
+      <div class="panel-title">Phase 3 — Python AI engine (the real magic)</div>
+      <div class="panel-desc">Three features that make Noctua original: Review Persona engine, Code DNA fingerprinting, and the Pre-flight check. Plus the core AI review pipeline.</div>
+      <span class="eta-tag">Day 9–15 · ~14 hrs</span>
+    </div>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-hd" onclick="tog(this)">
+        <div class="snum">1</div><div class="sname">FastAPI setup + dependencies</div>
+        <div class="stags"><span class="stag tag-p">Python</span></div><span class="schev">▶</span>
+      </div>
+      <div class="step-bd">
+        <div class="code">pip install fastapi uvicorn httpx groq supabase \
+  python-dotenv radon bandit mangum upstash-redis</div>
+        <div class="flabel">apps/engine/main.py</div>
+        <div class="code">from fastapi import FastAPI
+from routers import analyze, preflight, persona, health
+app = FastAPI(title="Noctua Engine v1")
+for r in [analyze, preflight, persona, health]:
+    app.include_router(r.router)</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-hd" onclick="tog(this)">
+        <div class="snum">2</div><div class="sname">Core AI review pipeline</div>
+        <div class="stags"><span class="stag tag-p">Python</span></div><span class="schev">▶</span>
+      </div>
+      <div class="step-bd">
+        <div class="step-bd-text">Fetches the diff, runs AST scanning, calls Groq LLaMA-3, writes results back, posts GitHub comment — all in one async pipeline.</div>
+        <div class="flabel">apps/engine/services/pipeline.py (core flow)</div>
+        <div class="code">import asyncio, httpx
+from groq import AsyncGroq
+from services.scanner import scan_code
+from services.dna import build_code_dna
+
+groq = AsyncGroq()
+
+async def run_pipeline(job: dict, persona: str):
+    diff = await fetch_diff(job["diff_url"], job["token"])
+    added = extract_added(diff)
+
+    # Run scan + AI call in parallel for speed
+    scan_task = asyncio.create_task(scan_code(added))
+    ai_task   = asyncio.create_task(ai_review(diff, job["title"], persona))
+    dna_task  = asyncio.create_task(build_code_dna(added, job["author"]))
+
+    issues, result, dna = await asyncio.gather(scan_task, ai_task, dna_task)
+
+    await save_to_supabase(job, result, issues, dna)
+    await post_github_comment(job, result, issues, persona)</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-hd" onclick="tog(this)">
+        <div class="snum">3</div><div class="sname">★ Review Persona engine — Noctua original</div>
+        <div class="stags"><span class="stag tag-u">Unique</span><span class="stag tag-p">Python</span></div><span class="schev">▶</span>
+      </div>
+      <div class="step-bd">
+        <div class="unique-banner"><span class="ubadge">Original</span>Each repo owner sets a review personality. The AI prompt and tone change completely based on the chosen persona — this is what no other tool does.</div>
+        <div class="flabel">apps/engine/services/persona.py</div>
+        <div class="code">PERSONAS = {
+  "strict": {
+    "system": """You are a meticulous senior engineer. Call out EVERY issue.
+Be direct, cite specific line numbers, no encouragement.
+Fail low-quality PRs without hesitation.""",
+    "score_weight": 0.6  # harder scorer
+  },
+  "mentor": {
+    "system": """You are a kind senior engineer teaching a junior dev.
+Explain WHY every suggestion matters. Use analogies.
+Always end with one genuine compliment. Be warm and patient.""",
+    "score_weight": 1.1
+  },
+  "fast": {
+    "system": """You are a fast-moving startup reviewer. Focus ONLY on
+blocking issues (security holes, broken logic). Skip style nits.
+Keep your review under 5 bullet points. Ship fast.""",
+    "score_weight": 0.9
+  },
+  "balanced": {
+    "system": "You are an experienced reviewer. Balance thoroughness with speed.",
+    "score_weight": 1.0
+  }
+}
+
+async def ai_review(diff, title, persona="balanced"):
+    cfg = PERSONAS.get(persona, PERSONAS["balanced"])
+    resp = await groq.chat.completions.create(
+        model="llama3-70b-8192",
+        messages=[
+          {"role":"system","content":cfg["system"]},
+          {"role":"user","content":f"PR: {title}\n\nDiff:\n{diff[:8000]}"}
+        ],
+        response_format={"type":"json_object"}
+    )
+    import json
+    result = json.loads(resp.choices[0].message.content)
+    result["quality_score"] = int(result.get("quality_score",70) * cfg["score_weight"])
+    return result</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-hd" onclick="tog(this)">
+        <div class="snum">4</div><div class="sname">★ Code DNA fingerprinting — Noctua original</div>
+        <div class="stags"><span class="stag tag-u">Unique</span><span class="stag tag-p">Python</span></div><span class="schev">▶</span>
+      </div>
+      <div class="step-bd">
+        <div class="unique-banner"><span class="ubadge">Original</span>Every author leaves coding fingerprints — average line length, comment frequency, nesting depth, naming patterns. Noctua tracks these per-author across PRs to build a "Code DNA" profile shown on the leaderboard.</div>
+        <div class="flabel">apps/engine/services/dna.py</div>
+        <div class="code">import ast, re
+from dataclasses import dataclass, asdict
+
+@dataclass
+class CodeDNA:
+    author: str
+    avg_line_length: float
+    comment_ratio: float      # comments / total lines
+    avg_nesting_depth: float  # how deep the if/for nesting goes
+    uses_type_hints: bool
+    snake_case_score: float   # % of identifiers in snake_case
+
+def build_code_dna(code: str, author: str) -> CodeDNA:
+    lines = code.splitlines()
+    total = len(lines) or 1
+    comments = sum(1 for l in lines if l.strip().startswith("#"))
+    avg_len  = sum(len(l) for l in lines) / total
+
+    depth, max_d = 0, 0
+    for l in lines:
+        depth += l.count("if ") + l.count("for ") + l.count("while ")
+        depth -= l.count("return") + l.count("break")
+        max_d  = max(max_d, depth)
+
+    identifiers = re.findall(r'\b([a-z_][a-zA-Z0-9_]*)\b', code)
+    snake = sum(1 for i in identifiers if re.fullmatch(r'[a-z_][a-z0-9_]*',i))
+    hints = bool(re.search(r':\s*(int|str|bool|float|list|dict|Optional)', code))
+
+    return CodeDNA(author, round(avg_len,1),
+                   round(comments/total,2), round(max_d/total*10,1),
+                   hints, round(snake/max(len(identifiers),1),2))</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-hd" onclick="tog(this)">
+        <div class="snum">5</div><div class="sname">★ Pre-flight check API — Noctua original</div>
+        <div class="stags"><span class="stag tag-u">Unique</span><span class="stag tag-p">Python</span></div><span class="schev">▶</span>
+      </div>
+      <div class="step-bd">
+        <div class="unique-banner"><span class="ubadge">Original</span>A GitHub Action step that hits Noctua's <code style="font-size:11px">/preflight</code> endpoint BEFORE the PR is opened. It fails the action if your local changes have critical security issues or extremely low quality — catching problems before review even starts.</div>
+        <div class="flabel">apps/engine/routers/preflight.py</div>
+        <div class="code">from fastapi import APIRouter
+from services.scanner import scan_code
+
+router = APIRouter()
+
+@router.post("/preflight")
+async def preflight(payload: dict):
+    """Called by GitHub Action before PR opens"""
+    code = payload.get("code", "")
+    issues = scan_code(code)
+    critical = [i for i in issues if i["severity"] == "critical"]
+    passed = len(critical) == 0
+    return {
+        "passed": passed,
+        "critical_count": len(critical),
+        "message": "All clear" if passed else
+                   f"Blocked: {len(critical)} critical issue(s) found",
+        "issues": critical
+    }</div>
+        <div class="flabel">.github/workflows/noctua-preflight.yml</div>
+        <div class="code">name: Noctua Pre-flight
+on: [push]
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Noctua pre-flight
+        run: |
+          RESULT=$(curl -s -X POST https://noctua.vercel.app/engine/preflight \
+            -H "Content-Type: application/json" \
+            -d "{\"code\": \"$(cat ${{ github.workspace }} | base64)\"}")
+          echo $RESULT | jq .
+          echo $RESULT | jq -e '.passed == true'</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-hd" onclick="tog(this)">
+        <div class="snum">6</div><div class="sname">Security scanner + GitHub comment poster</div>
+        <div class="stags"><span class="stag tag-p">Python</span></div><span class="schev">▶</span>
+      </div>
+      <div class="step-bd">
+        <div class="code">PATTERNS = {
+  "critical": [
+    r'(?i)(api_key|secret|password|token)\s*=\s*["\'][^"\']{8,}',
+    r'eval\s*\(',
+  ],
+  "high": [r'execute\(.*\%', r'\.format\(.*request'],
+  "medium": [r'print\(.*password', r'TODO.*security']
+}
+
+async def post_noctua_comment(repo, pr, token, result, issues, persona):
+    emoji = {"strict":"🔍","mentor":"🎓","fast":"⚡","balanced":"🦉"}
+    body  = f"## {emoji.get(persona,'🦉')} Noctua Review\n\n"
+    body += f"> {result['summary']}\n\n"
+    body += f"**Quality score:** `{result['quality_score']}/100`\n"
+    if issues:
+        body += f"**Security:** {len(issues)} issue(s) found\n"
+    body += f"\n*Persona: {persona} mode*"
+    async with httpx.AsyncClient() as c:
+        await c.post(
+          f"https://api.github.com/repos/{repo}/issues/{pr}/comments",
+          json={"body": body},
+          headers={"Authorization": f"token {token}"}
+        )</div>
+      </div>
+    </div>
+  </div>
+  <div class="progress-strip">
+    <span class="pbar-label">Phase 3 — longest phase</span>
+    <div class="pbar-bg"><div class="pbar-fill" style="width:100%"></div></div>
+    <span class="pbar-val">6 steps · ~14 hrs</span>
+  </div>
+</div>
+
+<!-- PHASE 4 -->
+<div class="panel" id="ph4">
+  <div class="panel-hero">
+    <div class="panel-icon" style="background:#FAECE7">🎨</div>
+    <div>
+      <div class="panel-title">Phase 4 — Dashboard UI (fast + attractive)</div>
+      <div class="panel-desc">Five pages. shadcn/ui + Recharts + Supabase Realtime. The Diff Timeline and Team Clarity Leaderboard are Noctua's visual signatures.</div>
+      <span class="eta-tag">Day 16–19 · ~8 hrs</span>
+    </div>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-hd" onclick="tog(this)">
+        <div class="snum">1</div><div class="sname">Free UI libraries to install</div>
+        <div class="stags"><span class="stag tag-n">Node.js</span></div><span class="schev">▶</span>
+      </div>
+      <div class="step-bd">
+        <div class="code">npx shadcn@latest init
+npx shadcn@latest add card badge table button dialog tooltip
+npm i recharts lucide-react @tanstack/react-table framer-motion</div>
+        <div class="bullets">
+          <div class="bullet"><span class="bdot"></span>shadcn/ui — free copy-paste component library, no subscription</div>
+          <div class="bullet"><span class="bdot"></span>Recharts — quality score trend lines and Code DNA radar chart</div>
+          <div class="bullet"><span class="bdot"></span>framer-motion — smooth PR card entry animations (status flips)</div>
+          <div class="bullet"><span class="bdot"></span>TanStack Table — sortable PR feed with author, score, status columns</div>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-hd" onclick="tog(this)">
+        <div class="snum">2</div><div class="sname">Five pages to build</div>
+        <div class="stags"><span class="stag tag-n">Node.js</span></div><span class="schev">▶</span>
+      </div>
+      <div class="step-bd">
+        <div class="bullets">
+          <div class="bullet"><span class="bdot"></span><code style="font-size:11px">/dashboard</code> — 4 stat cards: PRs reviewed, avg score, security issues caught, repos watched</div>
+          <div class="bullet"><span class="bdot"></span><code style="font-size:11px">/dashboard/prs</code> — TanStack sortable table: title, author avatar, score badge, persona tag, status pill, time</div>
+          <div class="bullet"><span class="bdot"></span><code style="font-size:11px">/dashboard/prs/[id]</code> — PR detail: AI summary, score gauge, Diff Timeline heatmap, security issues, suggestions</div>
+          <div class="bullet"><span class="bdot"></span><code style="font-size:11px">/dashboard/team</code> — Team Clarity Leaderboard with Code DNA radar chart per author</div>
+          <div class="bullet"><span class="bdot"></span><code style="font-size:11px">/dashboard/settings</code> — Persona selector per repo (strict / mentor / fast / balanced)</div>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-hd" onclick="tog(this)">
+        <div class="snum">3</div><div class="sname">★ Diff Timeline heatmap component — Noctua original</div>
+        <div class="stags"><span class="stag tag-u">Unique</span><span class="stag tag-n">Node.js</span></div><span class="schev">▶</span>
+      </div>
+      <div class="step-bd">
+        <div class="unique-banner"><span class="ubadge">Original</span>A visual strip that shows where in the diff changes cluster — green for safe additions, amber for complex changes, red for flagged lines. Built from the security scanner output, rendered as a proportional strip above the PR detail.</div>
+        <div class="flabel">apps/web/components/diff-timeline.tsx</div>
+        <div class="code">type Segment = { pct: number; color: "safe"|"warn"|"critical" }
+
+export function DiffTimeline({ segments }: { segments: Segment[] }) {
+  const colors = { safe:"#1D9E75", warn:"#BA7517", critical:"#E24B4A" }
+  return (
+    <div style={{ display:"flex", height:8, borderRadius:4, overflow:"hidden",
+                  gap:1, width:"100%" }}>
+      {segments.map((s,i) => (
+        <div key={i} style={{
+          flex: s.pct,
+          background: colors[s.color],
+          transition: "flex 0.4s ease"
+        }} title={`${s.pct}% ${s.color}`} />
+      ))}
+    </div>
+  )
+}</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-hd" onclick="tog(this)">
+        <div class="snum">4</div><div class="sname">★ Team Clarity Leaderboard — Noctua original</div>
+        <div class="stags"><span class="stag tag-u">Unique</span><span class="stag tag-n">Node.js</span></div><span class="schev">▶</span>
+      </div>
+      <div class="step-bd">
+        <div class="unique-banner"><span class="ubadge">Original</span>Ranks every contributor by their average quality score, security issue rate, and Code DNA consistency. Clicking any author shows their personal Code DNA radar chart — avg line length, comment ratio, nesting depth, type hints, naming score.</div>
+        <div class="code">// Recharts RadarChart for Code DNA profile
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis } from "recharts"
+
+const DNA_KEYS = ["Clarity","Comments","Nesting","Type hints","Naming"]
+
+export function CodeDnaRadar({ dna }: { dna: Record<string,number> }) {
+  const data = DNA_KEYS.map(k => ({ subject: k, score: dna[k] ?? 0 }))
+  return (
+    <RadarChart width={260} height={220} data={data}>
+      <PolarGrid stroke="var(--color-border-tertiary)" />
+      <PolarAngleAxis dataKey="subject" tick={{ fontSize:11 }} />
+      <Radar dataKey="score" fill="#534AB7" fillOpacity={0.2}
+             stroke="#534AB7" strokeWidth={1.5} />
+    </RadarChart>
+  )
+}</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-hd" onclick="tog(this)">
+        <div class="snum">5</div><div class="sname">Supabase Realtime — live PR status updates</div>
+        <div class="stags"><span class="stag tag-b">Both</span></div><span class="schev">▶</span>
+      </div>
+      <div class="step-bd">
+        <div class="step-bd-text">When Python finishes analysis it updates Supabase. The frontend subscribes to row-level changes — the PR card flips from "analyzing" to "done" in real time with a framer-motion animation. No polling.</div>
+        <div class="code">useEffect(() => {
+  const channel = supabase
+    .channel("prs")
+    .on("postgres_changes", {
+      event: "UPDATE", schema: "public", table: "pull_requests"
+    }, ({ new: pr }) => {
+      setPrs(prev => prev.map(p => p.id === pr.id ? pr : p))
+    })
+    .subscribe()
+  return () => { supabase.removeChannel(channel) }
+}, [])</div>
+      </div>
+    </div>
+  </div>
+  <div class="progress-strip">
+    <span class="pbar-label">Phase 4</span>
+    <div class="pbar-bg"><div class="pbar-fill" style="width:100%"></div></div>
+    <span class="pbar-val">5 steps · ~8 hrs</span>
+  </div>
+</div>
+
+<!-- PHASE 5 -->
+<div class="panel" id="ph5">
+  <div class="panel-hero">
+    <div class="panel-icon" style="background:#E1F5EE">🚀</div>
+    <div>
+      <div class="panel-title">Phase 5 — Ship it (100% free)</div>
+      <div class="panel-desc">Vercel for Next.js + Python serverless. GitHub secrets wired. Public demo seeded. Loom recorded. Portfolio-ready in 2 days.</div>
+      <span class="eta-tag">Day 20–21 · ~4 hrs</span>
+    </div>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-hd" onclick="tog(this)">
+        <div class="snum">1</div><div class="sname">vercel.json — monorepo + Python config</div>
+        <div class="stags"><span class="stag tag-i">Infra</span></div><span class="schev">▶</span>
+      </div>
+      <div class="step-bd">
+        <div class="code">{
+  "buildCommand": "cd apps/web && npm run build",
+  "outputDirectory": "apps/web/.next",
+  "functions": {
+    "apps/engine/api/index.py": { "runtime": "vercel-python@3.0.7" }
+  },
+  "rewrites": [
+    { "source": "/engine/:path*",
+      "destination": "/apps/engine/api/index.py/:path*" }
+  ]
+}</div>
+        <div class="flabel">apps/engine/api/index.py (Vercel Python entry)</div>
+        <div class="code">from mangum import Mangum
+from main import app
+handler = Mangum(app)</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-hd" onclick="tog(this)">
+        <div class="snum">2</div><div class="sname">Deploy checklist</div>
+        <div class="stags"><span class="stag tag-i">Infra</span></div><span class="schev">▶</span>
+      </div>
+      <div class="step-bd">
+        <div class="bullets">
+          <div class="bullet"><span class="bdot"></span>Push repo to GitHub → connect to Vercel → enable auto-deploy on push to main</div>
+          <div class="bullet"><span class="bdot"></span>Vercel → Settings → Environment Variables → paste every key from both .env files</div>
+          <div class="bullet"><span class="bdot"></span>Update GitHub App webhook URL to <code style="font-size:11px">https://noctua.vercel.app/api/webhook/github</code></div>
+          <div class="bullet"><span class="bdot"></span>Update <code style="font-size:11px">NEXTAUTH_URL</code> and <code style="font-size:11px">ENGINE_URL</code> to production Vercel URL</div>
+          <div class="bullet"><span class="bdot"></span>Open a real PR on a connected repo → confirm Noctua posts its review comment within 10s</div>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-hd" onclick="tog(this)">
+        <div class="snum">3</div><div class="sname">Portfolio-ready finishing touches</div>
+        <div class="stags"><span class="stag tag-b">Both</span></div><span class="schev">▶</span>
+      </div>
+      <div class="step-bd">
+        <div class="bullets">
+          <div class="bullet"><span class="bdot"></span>Seed a public demo repo with 10 pre-analyzed PRs — recruiters can explore without signing in</div>
+          <div class="bullet"><span class="bdot"></span>Record a 90-second Loom: open a PR → 8 seconds later Noctua's review comment appears → show the dashboard updating live</div>
+          <div class="bullet"><span class="bdot"></span>Write a README with the architecture diagram, "why the Persona engine" section, and the 3 unique features explained</div>
+          <div class="bullet"><span class="bdot"></span>Add to pranoys-portfolio.vercel.app alongside Live Demo + GitHub + Loom links</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="progress-strip">
+    <span class="pbar-label">Total build time</span>
+    <div class="pbar-bg"><div class="pbar-fill" style="width:100%"></div></div>
+    <span class="pbar-val">21 days · ~41 hrs total</span>
+  </div>
+  <div class="cta-row">
+    <button class="cbtn" onclick="sendPrompt('Generate the complete README.md for Noctua with architecture diagram, feature explanations, and setup guide')">Generate README ↗</button>
+    <button class="cbtn" onclick="sendPrompt('Give me all Supabase SQL migrations for Noctua in one file, including team_stats and code_dna tables')">All SQL migrations ↗</button>
+    <button class="cbtn" onclick="sendPrompt('Build me an attractive Noctua dashboard UI mockup showing the Team Clarity Leaderboard and PR feed')">UI mockup ↗</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+function go(i){
+  document.querySelectorAll('.panel').forEach((p,j)=>p.classList.toggle('active',i===j))
+  document.querySelectorAll('.titem').forEach((t,j)=>t.classList.toggle('active',i===j))
+}
+function tog(hd){
+  const bd=hd.nextElementSibling, ch=hd.querySelector('.schev'), open=bd.classList.contains('open')
+  bd.classList.toggle('open',!open); ch.classList.toggle('open',!open)
+}
+</script>

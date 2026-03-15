@@ -1,0 +1,50 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.root{padding:1.5rem 0;font-family:var(--font-sans)}
+.brand-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:2rem;margin-bottom:1.5rem;display:flex;flex-direction:column;align-items:center;text-align:center;gap:1rem}
+.owl-mark{width:72px;height:72px;border-radius:18px;background:#EEEDFE;display:flex;align-items:center;justify-content:center;font-size:36px}
+@media(prefers-color-scheme:dark){.owl-mark{background:#26215C}}
+.brand-name{font-size:40px;font-weight:500;letter-spacing:-1px;color:var(--color-text-primary)}
+.brand-accent{color:#534AB7}
+.brand-tagline{font-size:15px;color:var(--color-text-secondary);line-height:1.6;max-width:420px}
+.domain-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.domain-pill{font-size:12px;font-weight:500;padding:4px 12px;border-radius:20px;border:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary)}
+.diff-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.5rem}
+.diff-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem}
+.diff-label{font-size:11px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:.05em;margin-bottom:8px}
+.diff-item{font-size:13px;color:var(--color-text-secondary);line-height:1.6;display:flex;gap:8px;align-items:flex-start;margin-bottom:5px}
+.x-dot{color:#E24B4A;font-weight:500;flex-shrink:0}
+.check-dot{color:#1D9E75;font-weight:500;flex-shrink:0}
+</style>
+<div class="root">
+<div class="brand-card">
+  <div class="owl-mark">🦉</div>
+  <div class="brand-name">N<span class="brand-accent">octua</span></div>
+  <div class="brand-tagline">AI-powered pull request intelligence that watches your codebase while you sleep — reviews, scores, scans, and coaches your team in real-time.</div>
+  <div class="domain-row">
+    <span class="domain-pill">noctua.dev</span>
+    <span class="domain-pill">Stack: Next.js · Node.js · Python FastAPI</span>
+    <span class="domain-pill">Deploy: Vercel (free)</span>
+    <span class="domain-pill">~21 days to ship</span>
+  </div>
+</div>
+<div class="diff-row">
+  <div class="diff-card">
+    <div class="diff-label">Generic DevSage clone</div>
+    <div class="diff-item"><span class="x-dot">✕</span>Basic PR summary</div>
+    <div class="diff-item"><span class="x-dot">✕</span>Generic AI review bot</div>
+    <div class="diff-item"><span class="x-dot">✕</span>Simple score number</div>
+    <div class="diff-item"><span class="x-dot">✕</span>One review style</div>
+    <div class="diff-item"><span class="x-dot">✕</span>No team features</div>
+  </div>
+  <div class="diff-card">
+    <div class="diff-label">What makes Noctua original</div>
+    <div class="diff-item"><span class="check-dot">✓</span>Code DNA fingerprint per author</div>
+    <div class="diff-item"><span class="check-dot">✓</span>Review Persona engine (strict / mentor / fast)</div>
+    <div class="diff-item"><span class="check-dot">✓</span>Pre-flight check before PR opens</div>
+    <div class="diff-item"><span class="check-dot">✓</span>Team Clarity Leaderboard</div>
+    <div class="diff-item"><span class="check-dot">✓</span>Diff Timeline — visual heat-map of changes</div>
+  </div>
+</div>
+</div>
