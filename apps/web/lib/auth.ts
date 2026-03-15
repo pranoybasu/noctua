@@ -5,27 +5,25 @@ import { supabaseAdmin } from "./supabase";
 
 const DEMO_MODE = process.env.DEMO_MODE === "true";
 
-const providers: NextAuthOptions["providers"] = [];
+const providers: NextAuthOptions["providers"] = [
+  CredentialsProvider({
+    name: "Demo",
+    credentials: {},
+    async authorize() {
+      return {
+        id: "demo-user-id",
+        name: "Demo User",
+        email: "demo@noctua.dev",
+        image: "https://avatars.githubusercontent.com/u/10137?v=4",
+      };
+    },
+  }),
+];
 
-if (DEMO_MODE) {
-  providers.push(
-    CredentialsProvider({
-      name: "Demo",
-      credentials: {},
-      async authorize() {
-        return {
-          id: "demo-user-id",
-          name: "Demo User",
-          email: "demo@noctua.dev",
-          image: "https://avatars.githubusercontent.com/u/10137?v=4",
-        };
-      },
-    })
-  );
-} else {
+if (!DEMO_MODE && process.env.GITHUB_CLIENT_ID) {
   providers.push(
     GitHubProvider({
-      clientId: process.env.GITHUB_CLIENT_ID!,
+      clientId: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
       authorization: { params: { scope: "read:user repo" } },
     })
