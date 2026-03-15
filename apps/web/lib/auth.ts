@@ -31,6 +31,7 @@ if (!DEMO_MODE && process.env.GITHUB_CLIENT_ID) {
 }
 
 export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET || "noctua-demo-deployment-secret-2026",
   providers,
   session: { strategy: "jwt" },
   callbacks: {
