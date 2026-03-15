@@ -35,7 +35,7 @@ export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
   callbacks: {
     async jwt({ token, account, profile, user }) {
-      if (DEMO_MODE && user) {
+      if (user && account?.provider === "credentials") {
         token.userId = "demo-user-id";
         token.accessToken = "demo-token";
         token.login = "demo-user";
